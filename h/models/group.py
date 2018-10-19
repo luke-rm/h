@@ -6,6 +6,7 @@ from collections import namedtuple
 import enum
 import re
 import sqlalchemy as sa
+from sqlalchemy.ext.hybrid import hybrid_property
 from pyramid import security
 import slugify
 
@@ -89,6 +90,14 @@ class Group(Base, mixins.Timestamps):
     #: are: authority, members
     writeable_by = sa.Column(sa.Enum(WriteableBy, name='group_writeable_by'),
                              nullable=True)
+
+    @hybrid_property
+    def groupid(self):
+        if self.authority_provided_id is None:
+            return None
+        return 'group:{authority_provided_id}@{authority}'.format(
+            authority_provided_id=self.authority_provided_id,
+            authority=self.authority)
 
     # Group membership
     members = sa.orm.relationship(
